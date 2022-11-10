@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Col, Container, Form, Row } from 'react-bootstrap';
 import DatePicker, { registerLocale } from "react-datepicker";
-import { addMonths, addDays, setHours, setMinutes, getDay } from 'date-fns';
 import pt from "date-fns/locale/pt-BR";
 import './index.css';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 registerLocale("pt-BR", pt)
 
@@ -11,13 +12,51 @@ export const FazerReserva = () => {
     const [reserva, setReserva] = useState({});
     const [startDate, setStartDate] = useState(new Date());
     const [endDate, setEndDate] = useState(new Date());
+    const [nacionalidades, setNacionalidades] = useState(null);
+    const navigate = useNavigate();
+
+    useEffect(()=>{
+        axios('../../nacionalidades.json', {
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        }).then(response => {
+            setNacionalidades(response.data);
+        }).catch(error => {
+            console.error("Error fetching data", error);
+        });
+    },[])
+    
 
     const handleChange = (event) => {
         const {name, value} = event.target
+        setReserva({
+            ...reserva,
+            [name]: value
+        })
     }
 
-    const handleClick = () => {
-
+    const handleClick = (event) => {
+        setReserva({
+            ...reserva,
+            data_ini: startDate,
+            data_fim: endDate,
+        });
+        event.preventDefault();
+        var res = [];
+        if (localStorage.getItem('reservas')) {
+            const todasReservas = JSON.parse(localStorage.getItem('reservas'));
+            res = todasReservas;
+        }
+        const reservaDatas = {
+            ...reserva,
+            data_ini: startDate,
+            data_fim: endDate
+        }
+        res.push(reservaDatas);
+        localStorage.setItem('reservas', JSON.stringify(res));
+        navigate("/reservas", { replace: true });
     }
 
     return (
@@ -30,28 +69,31 @@ export const FazerReserva = () => {
                 </Form.Group>
                 <Form.Group className="form-group">
                     <Form.Label>Endereço</Form.Label>
-                    <Form.Control type="text" value={reserva.endereco} placeholder="Endereço" onChange={handleChange}/>
+                    <Form.Control type="text" name="endereco" value={reserva.endereco} placeholder="Endereço" onChange={handleChange}/>
                 </Form.Group>
                 <Form.Group className="form-group">
                     <Form.Label>Nacionalidade</Form.Label>
-                    <Form.Control type="text" value={reserva.nacionalidade} placeholder="Nacionalidade" onChange={handleChange}/>
+                    <Form.Select name="nacionalidade" onChange={handleChange}>
+                        <option>Selecione um país</option>
+                        {nacionalidades && nacionalidades.length > 0 && nacionalidades.map((item) => <option key={item.sigla}>{item.nome_pais}</option>)}
+                    </Form.Select>
                 </Form.Group>
                 <Form.Group className="form-group">
                     <Form.Label>E-mail</Form.Label>
-                    <Form.Control type="email" value={reserva.email} placeholder="E-mail" onChange={handleChange}/>
+                    <Form.Control type="email" name="email" value={reserva.email} placeholder="E-mail" onChange={handleChange}/>
                 </Form.Group>
                 <Form.Group className="form-group">
                     <Form.Label>Telefone</Form.Label>
-                    <Form.Control type="text" value={reserva.telefone} placeholder="Telefone" onChange={handleChange}/>
+                    <Form.Control type="text" name="telefone" value={reserva.telefone} placeholder="Telefone" onChange={handleChange}/>
                 </Form.Group>
                 <Form.Group className="form-group">
                     <Form.Label>Tipo de quarto</Form.Label>
-                    <Form.Select aria-label="Tipo de quarto" onChange={handleChange}>
+                    <Form.Select name="tipo_quarto" onChange={handleChange}>
                         <option>Selecione o tipo de quarto</option>
-                        <option value="1" >Solteiro</option>
-                        <option value="2">Casal</option>
-                        <option value="3">Família</option>
-                        <option value="4">Presidencial</option>
+                        <option >Solteiro</option>
+                        <option >Casal</option>
+                        <option >Família</option>
+                        <option >Presidencial</option>
                     </Form.Select>
                 </Form.Group>
                 <Form.Group className="form-group">
