@@ -1,0 +1,13 @@
+.form-group {
+    padding: 5px 0;
+}
+
+.link {
+    text-decoration: none;
+    padding-right: 10px;
+    color: white;
+}
+
+.link:hover {
+    color: grey;
+}
