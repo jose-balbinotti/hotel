@@ -1,24 +1,30 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Col, Container, Form, Row } from 'react-bootstrap';
+import { Button, Col, Container, Form, Modal, Row } from 'react-bootstrap';
 import DatePicker, { registerLocale } from "react-datepicker";
 import pt from "date-fns/locale/pt-BR";
 import './index.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { addDays } from 'date-fns';
 
 registerLocale("pt-BR", pt)
 
 export const FazerReserva = () => {
     const [reserva, setReserva] = useState({});
-    const [startDate, setStartDate] = useState(new Date());
-    const [endDate, setEndDate] = useState(new Date());
+    const [startDate, setStartDate] = useState(addDays(new Date(), 1));
+    const [endDate, setEndDate] = useState(addDays(new Date(), 2));
     const navigate = useNavigate();
     const [listaCliente, setListaCliente] = useState([]);
+    const [listaQuarto, setListaQuarto] = useState([]);
+    const [validated, setValidated] = useState(false)
+    const [show, setShow] = useState(false)
 
     useEffect(() => {
         axios.get('http://localhost:3001/listar-clientes').then((response) => {
-            console.log(response.data)
             setListaCliente(response.data)
+        })
+        axios.get('http://localhost:3001/listar-quartos').then((response) => {
+            setListaQuarto(response.data)
         })
     }, []);
 
@@ -30,48 +36,55 @@ export const FazerReserva = () => {
         })
     }
 
-    const handleClick = (event) => {
+    const handleSubmit = (event) => {
         setReserva({
             ...reserva,
             data_ini: startDate,
             data_fim: endDate,
         });
+        const form = event.currentTarget;
         event.preventDefault();
-        var res = [];
-        if (localStorage.getItem('reservas')) {
-            const todasReservas = JSON.parse(localStorage.getItem('reservas'));
-            res = todasReservas;
+        if (form.checkValidity() === false) {
+            event.stopPropagation();
+        } else {
+            const reservaComDatas = {
+                ...reserva,
+                cancelarUmDiaAntes: true,
+                checkIn: false,
+                data_ini: startDate,
+                data_fim: endDate
+            }
+            console.log(reservaComDatas)
+            axios.post('http://localhost:3001/cadastrar-reserva', reservaComDatas)
+            setShow(true)
         }
-        const reservaDatas = {
-            ...reserva,
-            data_ini: startDate,
-            data_fim: endDate
-        }
-        res.push(reservaDatas);
-        localStorage.setItem('reservas', JSON.stringify(res));
-        navigate("/reservas", { replace: true });
+        setValidated(true);
+    }
+
+    const handleClose = () => {
+        setShow(false)
+        navigate("/reservas", { replace: true })
     }
 
     return (
         <Container>
             <h4>Fazer reserva</h4>
-            <Form>
+            <Form noValidate validated={validated} onSubmit={handleSubmit}>
                 <Form.Group className="form-group">
                     <Form.Label>Cliente</Form.Label>
-                    <Form.Select aria-label="Cliente" onChange={handleChange}>
-                        <option>Selecione um cliente</option>
+                    <Form.Select aria-label="Cliente" name="cliente" onChange={handleChange} required>
+                        <option selected disabled value="">Selecione um cliente</option>
                         {listaCliente && listaCliente.length > 0 && listaCliente.map((cliente) => <option key={cliente._id} value={cliente._id}>{cliente.nome}</option>)}
                     </Form.Select>
+                    <Form.Control.Feedback type="invalid">Esse é um campo obrigatório</Form.Control.Feedback>
                 </Form.Group>
                 <Form.Group className="form-group">
                     <Form.Label>Tipo de quarto</Form.Label>
-                    <Form.Select name="tipo_quarto" onChange={handleChange}>
-                        <option>Selecione o tipo de quarto</option>
-                        <option >Solteiro</option>
-                        <option >Casal</option>
-                        <option >Família</option>
-                        <option >Presidencial</option>
+                    <Form.Select name="quarto" onChange={handleChange} id="validationCustom04" required>
+                        <option selected disabled value="">Selecione o tipo de quarto</option>
+                        {listaQuarto && listaQuarto.length > 0 && listaQuarto.map((quarto) => <option key={quarto.id} value={quarto.id}>{quarto.tipo}</option>)}
                     </Form.Select>
+                    <Form.Control.Feedback type="invalid">Esse é um campo obrigatório</Form.Control.Feedback>
                 </Form.Group>
                 <Form.Group className="form-group">
                     <Row className="align-items-center">
@@ -116,9 +129,22 @@ export const FazerReserva = () => {
                             />
                         </Col>
                     </Row>
+                    <Form.Control.Feedback type="invalid">Esse é um campo obrigatório</Form.Control.Feedback>
                 </Form.Group>
-                <Button variant="dark" type="submit" onClick={handleClick}>Salvar</Button>
+                <Button variant="dark" type="submit">Salvar</Button>
             </Form>
+
+            <Modal show={show} onHide={handleClose}>
+                <Modal.Header closeButton>
+                <Modal.Title>Sucesso</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>Dados salvos com sucesso!</Modal.Body>
+                <Modal.Footer>
+                <Button variant="primary" onClick={handleClose}>
+                    Ok
+                </Button>
+                </Modal.Footer>
+            </Modal>
         </Container>
     )
 }

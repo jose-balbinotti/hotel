@@ -9,6 +9,8 @@ export const CadastrarCliente = () => {
     const [nacionalidades, setNacionalidades] = useState(null)
     const [validated, setValidated] = useState(false)
     const [show, setShow] = useState(false)
+    const [showError, setShowError] = useState(false)
+    const [errorMessage, setErrorMessage] = useState(false)
     const navigate = useNavigate()
 
     useEffect(()=>{
@@ -38,15 +40,35 @@ export const CadastrarCliente = () => {
         if (form.checkValidity() === false) {
             event.stopPropagation();
         } else {
+            if (cliente.telefone.length < 15) {
+                setErrorMessage('O campo telefone está inválido')
+                setShowError(true)
+                return false
+            }
             axios.post('http://localhost:3001/cadastrar-cliente', cliente)
             setShow(true)
         }
         setValidated(true);
     }
 
-    const handleClose = () => {
+    const handleCloseSuccess = () => {
         setShow(false)
         navigate("/clientes", { replace: true })
+    }
+
+    const handleCloseError = () => setShowError(false)
+
+    const phoneMask = (value) => {
+        if (!value) return ""
+        value = value.replace(/\D/g,'')
+        value = value.replace(/(\d{2})(\d)/,"($1) $2")
+        value = value.replace(/(\d)(\d{4})$/,"$1-$2")
+        return value
+    }
+
+    const handlePhone = (event) => {
+        let input = event.target
+        input.value = phoneMask(input.value)
     }
 
     return (
@@ -64,7 +86,7 @@ export const CadastrarCliente = () => {
                 </Form.Group>
                 <Form.Group className="form-group">
                     <Form.Label>Telefone</Form.Label>
-                    <Form.Control type="text" name="telefone" value={cliente.telefone} placeholder="Telefone" onChange={handleChange} required/>
+                    <Form.Control type="tel" name="telefone" value={cliente.telefone} placeholder="Telefone" maxLength={15} onKeyUp={handlePhone} onChange={handleChange} required/>
                     <Form.Control.Feedback type="invalid">Esse é um campo obrigatório</Form.Control.Feedback>
                 </Form.Group>
                 <Form.Group className="form-group">
@@ -81,13 +103,25 @@ export const CadastrarCliente = () => {
                 <Button variant="dark" type="submit">Salvar</Button>
             </Form>
 
-            <Modal show={show} onHide={handleClose}>
+            <Modal show={show} onHide={handleCloseSuccess}>
                 <Modal.Header closeButton>
                 <Modal.Title>Sucesso</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>Dados salvos com sucesso!</Modal.Body>
                 <Modal.Footer>
-                <Button variant="primary" onClick={handleClose}>
+                <Button variant="primary" onClick={handleCloseSuccess}>
+                    Ok
+                </Button>
+                </Modal.Footer>
+            </Modal>
+
+            <Modal show={showError} onHide={handleCloseError}>
+                <Modal.Header closeButton>
+                <Modal.Title>ATENÇÃO</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>{errorMessage}</Modal.Body>
+                <Modal.Footer>
+                <Button variant="primary" onClick={handleCloseError}>
                     Ok
                 </Button>
                 </Modal.Footer>

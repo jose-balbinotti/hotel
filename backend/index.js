@@ -5,6 +5,7 @@ const app = express()
 
 const ClienteModel = require('./models/Cliente')
 const ReservaModel = require('./models/Reserva')
+const QuartoModel = require('./models/Quarto')
 
 app.use(express.json())
 app.use(cors())
@@ -15,6 +16,26 @@ mongoose.connect("mongodb+srv://pucpr:pucpr2022@cluster0.rbpd06e.mongodb.net/som
 
 app.get('/listar-clientes', async (req, res) => {
     ClienteModel.find({}, (err, result) => {
+        if (err) {
+            res.send(err)
+        }
+
+        res.send(result)
+    })
+})
+
+app.get('/listar-reservas', async (req, res) => {
+    ReservaModel.find({}, (err, result) => {
+        if (err) {
+            res.send(err)
+        }
+
+        res.send(result)
+    })
+})
+
+app.get('/listar-quartos', async (req, res) => {
+    QuartoModel.find({}, (err, result) => {
         if (err) {
             res.send(err)
         }
@@ -51,8 +72,8 @@ app.post('/cadastrar-cliente', async (req, res) => {
 //Cadastrar reserva
 app.post('/cadastrar-reserva', async (req, res) => {
 
-    const dataIni = req.body.dataIni
-    const dataFin = req.body.dataFin
+    const dataIni = req.body.data_ini
+    const dataFin = req.body.data_fim
     const checkIn = false
     const cancelarUmDiaAntes = true
     const quartos_id = req.body.quarto

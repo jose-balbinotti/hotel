@@ -11,3 +11,7 @@
 .link:hover {
     color: grey;
 }
+
+tr {
+    text-align: center;
+}
