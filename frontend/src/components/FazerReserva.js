@@ -3,8 +3,8 @@ import { Button, Col, Container, Form, Row } from 'react-bootstrap';
 import DatePicker, { registerLocale } from "react-datepicker";
 import pt from "date-fns/locale/pt-BR";
 import './index.css';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 registerLocale("pt-BR", pt)
 
@@ -65,12 +65,12 @@ export const FazerReserva = () => {
                 </Form.Group>
                 <Form.Group className="form-group">
                     <Form.Label>Tipo de quarto</Form.Label>
-                    <Form.Select aria-label="Tipo de quarto" onChange={handleChange}>
+                    <Form.Select name="tipo_quarto" onChange={handleChange}>
                         <option>Selecione o tipo de quarto</option>
-                        <option value="1" >Solteiro</option>
-                        <option value="2">Casal</option>
-                        <option value="3">Família</option>
-                        <option value="4">Presidencial</option>
+                        <option >Solteiro</option>
+                        <option >Casal</option>
+                        <option >Família</option>
+                        <option >Presidencial</option>
                     </Form.Select>
                 </Form.Group>
                 <Form.Group className="form-group">
