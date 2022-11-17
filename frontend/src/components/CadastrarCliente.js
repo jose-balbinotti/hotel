@@ -109,7 +109,7 @@ export const CadastrarCliente = () => {
                 </Modal.Header>
                 <Modal.Body>Dados salvos com sucesso!</Modal.Body>
                 <Modal.Footer>
-                <Button variant="primary" onClick={handleCloseSuccess}>
+                <Button variant="dark" onClick={handleCloseSuccess}>
                     Ok
                 </Button>
                 </Modal.Footer>
@@ -121,7 +121,7 @@ export const CadastrarCliente = () => {
                 </Modal.Header>
                 <Modal.Body>{errorMessage}</Modal.Body>
                 <Modal.Footer>
-                <Button variant="primary" onClick={handleCloseError}>
+                <Button variant="dark" onClick={handleCloseError}>
                     Ok
                 </Button>
                 </Modal.Footer>

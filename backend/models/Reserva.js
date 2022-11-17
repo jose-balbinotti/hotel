@@ -18,11 +18,12 @@ const ReservaSchema = new mongoose.Schema({
         required: true,
     },
     quartos_id: {
-        type: String,
+        type: Number,
         required: true
     },
     clientes_id: {
-        type: String,
+        type: mongoose.Schema.ObjectId,
+        ref: 'clientes',
         required: true
     }
 })

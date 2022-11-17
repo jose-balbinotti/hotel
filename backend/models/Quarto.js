@@ -20,7 +20,8 @@ const QuartoSchema = new mongoose.Schema({
         type: Boolean,
     },
     hotels_id: {
-        type: Number,
+        type: mongoose.Schema.ObjectId,
+        ref: 'hotels'
     }
 })
 

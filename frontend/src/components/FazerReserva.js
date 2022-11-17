@@ -140,7 +140,7 @@ export const FazerReserva = () => {
                 </Modal.Header>
                 <Modal.Body>Dados salvos com sucesso!</Modal.Body>
                 <Modal.Footer>
-                <Button variant="primary" onClick={handleClose}>
+                <Button variant="dark" onClick={handleClose}>
                     Ok
                 </Button>
                 </Modal.Footer>

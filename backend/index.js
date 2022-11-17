@@ -25,12 +25,18 @@ app.get('/listar-clientes', async (req, res) => {
 })
 
 app.get('/listar-reservas', async (req, res) => {
-    ReservaModel.find({}, (err, result) => {
+    ReservaModel.aggregate([{
+        $lookup: {
+            from: "clientes", // collection name in db
+            localField: "clientes_id",
+            foreignField: "_id",
+            as: "cliente"
+        }
+    }]).exec(function(err, reservas) {
         if (err) {
             res.send(err)
         }
-
-        res.send(result)
+        res.send(reservas)
     })
 })
 
@@ -85,7 +91,7 @@ app.post('/cadastrar-reserva', async (req, res) => {
         checkIn: checkIn,
         cancelarUmDiaAntes: cancelarUmDiaAntes,
         quartos_id: quartos_id,
-        clientes_id: clientes_id,
+        clientes_id: mongoose.Types.ObjectId(clientes_id),
     })
 
     try {
@@ -94,6 +100,22 @@ app.post('/cadastrar-reserva', async (req, res) => {
     } catch (err) {
         console.log(err)
     }
+})
+
+//Cancelar reserva
+app.delete('/cancelar-reserva/:id', async (req, res) => {
+    // ReservaModel.find({ _id: mongoose.Types.ObjectId(req.params.id) }).remove().exec();
+    ReservaModel.deleteOne({_id: mongoose.Types.ObjectId(req.params.id)}).exec();
+})
+
+//Fazer check-in
+app.put('/fazer-checkin/:id', async (req, res) => {
+    var query = {_id: mongoose.Types.ObjectId(req.params.id)};
+
+    ReservaModel.findOneAndUpdate(query, {checkIn: true}, {upsert: true}, function(err, doc) {
+        if (err) return res.send(500, {error: err});
+        return res.send('Succesfully saved.');
+    })
 })
 
 app.listen(3001, () => {
