@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Col, Container, Form, Row } from 'react-bootstrap';
 import DatePicker, { registerLocale } from "react-datepicker";
-import { addMonths, addDays, setHours, setMinutes, getDay } from 'date-fns';
 import pt from "date-fns/locale/pt-BR";
 import './index.css';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 registerLocale("pt-BR", pt)
 
@@ -11,13 +12,44 @@ export const FazerReserva = () => {
     const [reserva, setReserva] = useState({});
     const [startDate, setStartDate] = useState(new Date());
     const [endDate, setEndDate] = useState(new Date());
+    const navigate = useNavigate();
+    const [listaCliente, setListaCliente] = useState([]);
+
+    useEffect(() => {
+        axios.get('http://localhost:3001/listar-clientes').then((response) => {
+            console.log(response.data)
+            setListaCliente(response.data)
+        })
+    }, []);
 
     const handleChange = (event) => {
         const {name, value} = event.target
+        setReserva({
+            ...reserva,
+            [name]: value
+        })
     }
 
-    const handleClick = () => {
-
+    const handleClick = (event) => {
+        setReserva({
+            ...reserva,
+            data_ini: startDate,
+            data_fim: endDate,
+        });
+        event.preventDefault();
+        var res = [];
+        if (localStorage.getItem('reservas')) {
+            const todasReservas = JSON.parse(localStorage.getItem('reservas'));
+            res = todasReservas;
+        }
+        const reservaDatas = {
+            ...reserva,
+            data_ini: startDate,
+            data_fim: endDate
+        }
+        res.push(reservaDatas);
+        localStorage.setItem('reservas', JSON.stringify(res));
+        navigate("/reservas", { replace: true });
     }
 
     return (
@@ -25,24 +57,11 @@ export const FazerReserva = () => {
             <h4>Fazer reserva</h4>
             <Form>
                 <Form.Group className="form-group">
-                    <Form.Label>Nome</Form.Label>
-                    <Form.Control type="text" name="nome" value={reserva.nome} placeholder="Nome" onChange={handleChange}/>
-                </Form.Group>
-                <Form.Group className="form-group">
-                    <Form.Label>Endereço</Form.Label>
-                    <Form.Control type="text" value={reserva.endereco} placeholder="Endereço" onChange={handleChange}/>
-                </Form.Group>
-                <Form.Group className="form-group">
-                    <Form.Label>Nacionalidade</Form.Label>
-                    <Form.Control type="text" value={reserva.nacionalidade} placeholder="Nacionalidade" onChange={handleChange}/>
-                </Form.Group>
-                <Form.Group className="form-group">
-                    <Form.Label>E-mail</Form.Label>
-                    <Form.Control type="email" value={reserva.email} placeholder="E-mail" onChange={handleChange}/>
-                </Form.Group>
-                <Form.Group className="form-group">
-                    <Form.Label>Telefone</Form.Label>
-                    <Form.Control type="text" value={reserva.telefone} placeholder="Telefone" onChange={handleChange}/>
+                    <Form.Label>Cliente</Form.Label>
+                    <Form.Select aria-label="Cliente" onChange={handleChange}>
+                        <option>Selecione um cliente</option>
+                        {listaCliente && listaCliente.length > 0 && listaCliente.map((cliente) => <option key={cliente._id} value={cliente._id}>{cliente.nome}</option>)}
+                    </Form.Select>
                 </Form.Group>
                 <Form.Group className="form-group">
                     <Form.Label>Tipo de quarto</Form.Label>

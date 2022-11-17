@@ -13,6 +13,7 @@ export const NavbarContent = () => {
                 <Nav className="me-auto">
                     <Link className='link' to="/quartos">Quartos</Link>
                     <Link className='link' to="/reservas">Reservas</Link>
+                    <Link className='link' to="/clientes">Clientes</Link>
                 </Nav>
             </Navbar.Collapse>
             </Container>
